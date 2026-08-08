@@ -1,0 +1,7 @@
+cd C:\Users\MANNA\TrackSphere
+@"
+venv/
+__pycache__/
+*.pyc
+.env
+"@ | Out-File -FilePath .gitignore -Encoding utf8

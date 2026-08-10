@@ -24,7 +24,7 @@ class RecordStatusHistory(Base):
         UUID(as_uuid=True), ForeignKey("records.record_id", ondelete="CASCADE"), nullable=False
     )
     status: Mapped[RecordStatus] = mapped_column(
-        SAEnum(RecordStatus, name="record_status", native_enum=True), nullable=False
+        SAEnum(RecordStatus, name="record_status", native_enum=True, values_callable=lambda enum_cls: [e.value for e in enum_cls]), nullable=False
     )
     changed_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.user_id")

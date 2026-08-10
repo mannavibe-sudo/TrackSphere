@@ -29,7 +29,7 @@ class Company(Base):
     contact_number: Mapped[str | None] = mapped_column(String(20))
     email: Mapped[str | None] = mapped_column(String(255))
     status: Mapped[EntityStatus] = mapped_column(
-        SAEnum(EntityStatus, name="entity_status", native_enum=True),
+        SAEnum(EntityStatus, name="entity_status", native_enum=True, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
         default=EntityStatus.ACTIVE,
         nullable=False,
     )

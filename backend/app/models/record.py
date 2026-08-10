@@ -76,10 +76,16 @@ class Record(Base):
 
     # ---- System / tracking fields ----
     status: Mapped[RecordStatus] = mapped_column(
-        SAEnum(RecordStatus, name="record_status", native_enum=True),
+        SAEnum(RecordStatus, name="record_status", native_enum=True, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
         default=RecordStatus.DRAFT,
         nullable=False,
     )
+    # Independent of `status` — the real lifecycle stage (Loading, Dispatched...)
+    # is about where the truck physically is. This flag is purely about
+    # whether the original Data Entry User is currently allowed to edit a
+    # record that has already been submitted. Admin toggles it via
+    # POST /records/{id}/reopen and /lock.
+    edit_unlocked: Mapped[bool] = mapped_column(default=False, nullable=False)
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.user_id")
     )

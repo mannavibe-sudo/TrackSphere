@@ -27,7 +27,7 @@ class Notification(Base):
         UUID(as_uuid=True), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
     )
     channel: Mapped[NotificationChannel] = mapped_column(
-        SAEnum(NotificationChannel, name="notification_channel", native_enum=True),
+        SAEnum(NotificationChannel, name="notification_channel", native_enum=True, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
         default=NotificationChannel.IN_APP,
         nullable=False,
     )

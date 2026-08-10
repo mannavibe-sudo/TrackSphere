@@ -38,12 +38,12 @@ class User(Base):
     mobile: Mapped[str | None] = mapped_column(String(20))
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        SAEnum(UserRole, name="user_role", native_enum=True),
+        SAEnum(UserRole, name="user_role", native_enum=True, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
         default=UserRole.DATA_ENTRY_USER,
         nullable=False,
     )
     status: Mapped[EntityStatus] = mapped_column(
-        SAEnum(EntityStatus, name="entity_status", native_enum=True),
+        SAEnum(EntityStatus, name="entity_status", native_enum=True, values_callable=lambda enum_cls: [e.value for e in enum_cls]),
         default=EntityStatus.ACTIVE,
         nullable=False,
     )

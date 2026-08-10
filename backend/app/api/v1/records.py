@@ -129,6 +129,39 @@ def advance_status(
     return RecordOut.model_validate(record)
 
 
+@router.post("/{record_id}/reopen", response_model=RecordOut)
+def reopen_record(
+    record_id: uuid.UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    service: RecordService = Depends(_service),
+) -> RecordOut:
+    """Company Admin / Super Admin only — lets the original user edit a
+    submitted record again without changing its lifecycle status."""
+    try:
+        record = service.reopen(record_id, current_user)
+    except RecordNotFoundError as exc:
+        raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except RecordPermissionError as exc:
+        raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    return RecordOut.model_validate(record)
+
+
+@router.post("/{record_id}/lock", response_model=RecordOut)
+def lock_record(
+    record_id: uuid.UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+    service: RecordService = Depends(_service),
+) -> RecordOut:
+    """Company Admin / Super Admin only — revokes a temporary reopen."""
+    try:
+        record = service.lock(record_id, current_user)
+    except RecordNotFoundError as exc:
+        raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except RecordPermissionError as exc:
+        raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+    return RecordOut.model_validate(record)
+
+
 @router.delete("/{record_id}", status_code=http_status.HTTP_204_NO_CONTENT)
 def delete_record(
     record_id: uuid.UUID,

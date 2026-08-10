@@ -32,10 +32,13 @@ class RecordRepository:
         search: str | None,
         page: int,
         page_size: int,
+        created_by: uuid.UUID | None = None,
     ) -> tuple[list[Record], int]:
         stmt = select(Record).where(Record.deleted_at.is_(None))
         if company_id is not None:
             stmt = stmt.where(Record.company_id == company_id)
+        if created_by is not None:
+            stmt = stmt.where(Record.created_by == created_by)
         if status:
             stmt = stmt.where(Record.status == status)
         if search:

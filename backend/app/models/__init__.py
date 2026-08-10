@@ -11,6 +11,7 @@ from app.models.attachment import Attachment
 from app.models.comment import Comment
 from app.models.audit_log import AuditLog
 from app.models.notification import Notification
+from app.models.transporter import Transporter
 
 __all__ = [
     "Base",
@@ -22,4 +23,5 @@ __all__ = [
     "Comment",
     "AuditLog",
     "Notification",
+    "Transporter",
 ]

@@ -69,6 +69,7 @@ class RecordOut(RecordBase):
     record_id: uuid.UUID
     company_id: uuid.UUID
     status: RecordStatus
+    edit_unlocked: bool
     created_by: uuid.UUID | None
     created_date: datetime
     updated_date: datetime

@@ -40,11 +40,12 @@ class RecordService:
     def _assert_can_edit(self, record: Record, current_user: CurrentUser) -> None:
         if current_user.is_super_admin or current_user.role == UserRole.COMPANY_ADMIN:
             return
-        # Data Entry User: allowed only on their own draft records.
-        if record.status != RecordStatus.DRAFT:
+        # Data Entry User: allowed on their own draft records, OR a
+        # submitted record an Admin has explicitly reopened for them.
+        if record.status != RecordStatus.DRAFT and not record.edit_unlocked:
             raise RecordPermissionError(
-                "This record has been submitted. Only a Company Admin or "
-                "Super Admin can edit it now."
+                "This record has been submitted. Ask a Company Admin or "
+                "Super Admin to reopen it if you need to make changes."
             )
         if record.created_by != current_user.user_id:
             raise RecordPermissionError("You can only edit records you created.")
@@ -63,8 +64,20 @@ class RecordService:
         page: int = 1,
         page_size: int = 20,
     ) -> tuple[list[Record], int]:
+        # Data Entry Users see only records they created, even within their
+        # own company — Company Admin / Super Admin see everyone's.
+        own_only = (
+            current_user.user_id
+            if current_user.role == UserRole.DATA_ENTRY_USER
+            else None
+        )
         return self.repo.list(
-            self._scoping_company_id(current_user), status, search, page, page_size
+            self._scoping_company_id(current_user),
+            status,
+            search,
+            page,
+            page_size,
+            created_by=own_only,
         )
 
     def create_draft(self, data: RecordCreate, current_user: CurrentUser) -> Record:
@@ -92,6 +105,7 @@ class RecordService:
                 f"Record is already at its final status ({record.status.value})."
             )
         record.status = next_status
+        record.edit_unlocked = False
         self.db.commit()
         self.db.refresh(record)
         return record
@@ -110,3 +124,24 @@ class RecordService:
             raise RecordPermissionError("Only a Company Admin or Super Admin can delete records.")
         record = self.get(record_id, current_user)
         self.repo.soft_delete(record)
+
+    def reopen(self, record_id: uuid.UUID, current_user: CurrentUser) -> Record:
+        """Admin-only: lets the original Data Entry User edit a submitted
+        record again, without changing its real lifecycle status."""
+        if current_user.role == UserRole.DATA_ENTRY_USER:
+            raise RecordPermissionError("Only a Company Admin or Super Admin can reopen a record.")
+        record = self.get(record_id, current_user)
+        record.edit_unlocked = True
+        self.db.commit()
+        self.db.refresh(record)
+        return record
+
+    def lock(self, record_id: uuid.UUID, current_user: CurrentUser) -> Record:
+        """Admin-only: revokes the temporary edit access granted by reopen()."""
+        if current_user.role == UserRole.DATA_ENTRY_USER:
+            raise RecordPermissionError("Only a Company Admin or Super Admin can lock a record.")
+        record = self.get(record_id, current_user)
+        record.edit_unlocked = False
+        self.db.commit()
+        self.db.refresh(record)
+        return record

@@ -1,0 +1,32 @@
+{
+  "name": "TrackSphere Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/postgres:1": {
+      "version": "17"
+    }
+  },
+
+  "forwardPorts": [8000, 5173, 5432],
+  "portsAttributes": {
+    "8000": { "label": "Backend (FastAPI)", "onAutoForward": "notify" },
+    "5173": { "label": "Frontend (React)", "onAutoForward": "openPreview" },
+    "5432": { "label": "PostgreSQL" }
+  },
+
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

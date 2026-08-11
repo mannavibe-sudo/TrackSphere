@@ -5,7 +5,11 @@ set -e
 
 echo "=== TrackSphere: setting up your environment ==="
 
-# --- PostgreSQL: create the database ---
+# --- PostgreSQL: install and create the database ---
+echo "--- Installing PostgreSQL ---"
+sudo apt-get update -qq
+sudo apt-get install -y -qq postgresql postgresql-contrib
+
 echo "--- Creating database ---"
 sudo service postgresql start
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';" || true
